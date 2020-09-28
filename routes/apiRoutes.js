@@ -1,76 +1,31 @@
-var fs = require("fs");
 var { v4: uuidv4 } = require('uuid');
+var notesData=require("../db/db");
 //=====================================================================
 //Routing
 //=====================================================================
 module.exports = function (app) {
+
+  //To get the data from JSON
   app.get("/api/notes", function (req, res) {
-    fs.readFile("./db/db.json", "utf8", function (error, data) {
-      if (error) {
-        return console.log(error);
-      }
+res.json(notesData);
 
-      res.json(JSON.parse(data));
-    });
   });
 
+  //To post the data from JSON
   app.post("/api/notes", function (req, res) {
-    fs.readFile("./db/db.json", "utf8", function (error, data) {
-      if (error) {
-        return console.log(error);
-      }
-
-      var notes = JSON.parse(data);
-
       req.body.id = uuidv4();
-      notes.push(req.body);
-      fs.writeFile("./db/db.json", JSON.stringify(notes), "utf8", function (
-        error
-      ) {
-        if (error) {
-          return console.log(error);
-        }
-
-        res.json("Successfully saved!");
-      });
-    });
+      notesData.push(req.body);
+      res.send(notesData);
   });
 
-  app.delete("/api/notes/:id", function(req,res){
-    var jsonId = req.params.id;
-
-
-    console.log(jsonId);
-    fs.readFile("./db/db.json", "utf8", function (error, data) {
-      if (error) {
-        return console.log(error);
+  //To delete the data from JSON
+  app.delete("/api/notes/:id",function(req,res){
+    notesData = notesData.filter(note=> {
+      if (note.id == req.params.id) {
+        return false;
       }
-console.log(data);
-      var notes = JSON.parse(data);
-      // console.log(notes);
-
-      // for(i=0;i<notes.length;i++){
-      //   console.log(notes[i].id);
-      //   console.log(jsonId);
-      //   if(notes[i].id === jsonId )
-      //   {
-      //     notes.slice(i);
-      //   }
-      // }
-      var listId = notes.filter((value) => value.id !== jsonId)
-      console.log(listId);
-      // listId.slice();
-    
-// filter method
-      fs.writeFile("./db/db.json", JSON.stringify(listId), "utf8", function (
-        error
-      ) {
-        if (error) {
-          return console.log(error);
-        }
-
-        res.json("Successfully deleted!");
-      });
+      return true;
     });
+    res.send(notesData);
   })
 };
